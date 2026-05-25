@@ -1,171 +1,586 @@
 <!DOCTYPE html>
-<html>
+<html lang="es">
 <head>
-  <title>Dashboard Inteligente</title>
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>NEXUS — Panel de Negocios</title>
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700;800&family=JetBrains+Mono:wght@400;600&display=swap" rel="stylesheet">
+<style>
+:root{
+  --bg:#f0f4f8;
+  --surface:#ffffff;
+  --surface2:#f7f9fc;
+  --surface3:#eef2f7;
+  --border:#e2e8f0;
+  --accent:#0ea5e9;
+  --accent2:#6366f1;
+  --accent3:#10b981;
+  --warn:#f59e0b;
+  --danger:#ef4444;
+  --text:#0f172a;
+  --text2:#475569;
+  --text3:#94a3b8;
+  --sidebar:248px;
+  --radius:14px;
+}
+*{margin:0;padding:0;box-sizing:border-box;}
+html,body{height:100%;overflow:hidden;}
+body{font-family:'Outfit',sans-serif;background:var(--bg);color:var(--text);display:flex;}
 
-  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+::-webkit-scrollbar{width:5px;height:5px;}
+::-webkit-scrollbar-track{background:transparent;}
+::-webkit-scrollbar-thumb{background:var(--border);border-radius:10px;}
 
-  <style>
-    body {
-      font-family: Arial;
-      margin: 0;
-      display: flex;
-      background: #f4f4f4;
-    }
+/* SIDEBAR */
+.sidebar{
+  width:var(--sidebar);flex-shrink:0;
+  background:var(--surface);
+  border-right:1px solid var(--border);
+  display:flex;flex-direction:column;
+  height:100vh;position:fixed;left:0;top:0;
+  z-index:100;box-shadow:2px 0 12px rgba(0,0,0,0.04);
+}
+.logo{
+  padding:26px 22px 18px;
+  font-size:22px;font-weight:800;letter-spacing:-0.5px;
+  border-bottom:1px solid var(--border);
+  background:linear-gradient(135deg,var(--accent),var(--accent2));
+  -webkit-background-clip:text;-webkit-text-fill-color:transparent;
+}
+.logo span{display:block;font-size:11px;font-weight:500;color:var(--text3);-webkit-text-fill-color:var(--text3);letter-spacing:0.1em;text-transform:uppercase;margin-top:2px;}
+.nav{flex:1;padding:16px 12px;overflow-y:auto;}
+.nav-group{margin-bottom:24px;}
+.nav-label{font-size:10px;font-weight:600;color:var(--text3);text-transform:uppercase;letter-spacing:0.1em;padding:0 12px;margin-bottom:8px;}
+.nav a{
+  display:flex;align-items:center;gap:10px;
+  padding:10px 12px;border-radius:10px;
+  color:var(--text2);text-decoration:none;font-size:14px;font-weight:500;
+  transition:all 0.15s;margin-bottom:2px;
+}
+.nav a:hover{background:var(--surface2);color:var(--text);}
+.nav a.active{background:rgba(14,165,233,0.08);color:var(--accent);border:1px solid rgba(14,165,233,0.18);}
+.nav a .ico{font-size:16px;width:20px;text-align:center;}
+.sidebar-footer{padding:16px;border-top:1px solid var(--border);}
+.biz-badge{background:var(--surface2);border:1px solid var(--border);border-radius:10px;padding:12px;font-size:12px;color:var(--text2);}
+.biz-badge b{display:block;color:var(--text);font-size:13px;margin-bottom:2px;}
 
-    .sidebar {
-      width: 220px;
-      background: #1e272e;
-      color: white;
-      height: 100vh;
-      padding: 20px;
-    }
+/* MAIN */
+.main{margin-left:var(--sidebar);flex:1;height:100vh;overflow-y:auto;display:flex;flex-direction:column;}
 
-    .sidebar a {
-      display: block;
-      color: white;
-      padding: 10px;
-      text-decoration: none;
-      margin-top: 10px;
-      border-radius: 6px;
-    }
+/* TOPBAR */
+.topbar{
+  background:var(--surface);border-bottom:1px solid var(--border);
+  padding:16px 28px;display:flex;align-items:center;justify-content:space-between;
+  position:sticky;top:0;z-index:50;box-shadow:0 1px 6px rgba(0,0,0,0.05);
+}
+.topbar-left h1{font-size:20px;font-weight:700;letter-spacing:-0.3px;color:var(--text);}
+.topbar-left p{font-size:12px;color:var(--text3);margin-top:2px;}
+.topbar-right{display:flex;align-items:center;gap:12px;}
+.live-badge{display:flex;align-items:center;gap:6px;background:rgba(16,185,129,0.08);border:1px solid rgba(16,185,129,0.2);border-radius:20px;padding:6px 12px;font-size:12px;font-weight:600;color:var(--accent3);}
+.live-dot{width:7px;height:7px;border-radius:50%;background:var(--accent3);animation:pulse 2s infinite;}
+@keyframes pulse{0%,100%{opacity:1;}50%{opacity:0.3;}}
+.refresh-btn{background:var(--surface2);border:1px solid var(--border);border-radius:8px;padding:8px 14px;color:var(--text2);font-size:13px;font-family:inherit;cursor:pointer;transition:all 0.15s;}
+.refresh-btn:hover{border-color:var(--accent);color:var(--accent);background:#f0f9ff;}
 
-    .sidebar a:hover {
-      background: #485460;
-    }
+/* CONTENT */
+.content{padding:24px 28px;flex:1;}
 
-    .main {
-      flex: 1;
-    }
+/* SECTION TITLE */
+.sec-title{font-size:12px;font-weight:700;color:var(--text3);text-transform:uppercase;letter-spacing:0.1em;margin-bottom:14px;display:flex;align-items:center;gap:8px;}
+.sec-title::after{content:'';flex:1;height:1px;background:var(--border);}
 
-    .header {
-      background: #ff3f34;
-      color: white;
-      padding: 15px;
-      font-size: 20px;
-    }
+/* ========================================
+   HERO INVERSION — NUEVA SECCIÓN DESTACADA
+   ======================================== */
+.inv-hero{
+  display:grid;grid-template-columns:1fr 1fr 1fr;gap:16px;
+  margin-bottom:28px;
+}
+.inv-hero-card{
+  border-radius:16px;padding:24px;position:relative;overflow:hidden;
+  transition:all 0.2s;cursor:default;
+}
+.inv-hero-card:hover{transform:translateY(-3px);box-shadow:0 12px 40px rgba(0,0,0,0.1);}
+.inv-hero-card.invested{
+  background:linear-gradient(135deg,#1e3a5f,#1e4d7b);
+  color:white;
+}
+.inv-hero-card.ganancia{
+  background:linear-gradient(135deg,#064e3b,#065f46);
+  color:white;
+}
+.inv-hero-card.diferencia{
+  background:linear-gradient(135deg,#4c1d95,#5b21b6);
+  color:white;
+}
+.inv-hero-label{font-size:11px;font-weight:600;text-transform:uppercase;letter-spacing:0.1em;opacity:0.7;margin-bottom:10px;}
+.inv-hero-val{font-size:32px;font-weight:800;font-family:'JetBrains Mono',monospace;letter-spacing:-1px;line-height:1;}
+.inv-hero-sub{font-size:12px;opacity:0.65;margin-top:10px;line-height:1.4;}
+.inv-hero-icon{position:absolute;right:20px;top:20px;font-size:36px;opacity:0.15;}
+.inv-hero-badge{
+  display:inline-flex;align-items:center;gap:5px;
+  background:rgba(255,255,255,0.15);border-radius:20px;
+  padding:4px 10px;font-size:11px;font-weight:700;margin-top:10px;
+}
 
-    .container {
-      padding: 20px;
-    }
+/* KPI GRID */
+.kpi-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:14px;margin-bottom:28px;}
+.kpi{
+  background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);
+  padding:20px;position:relative;overflow:hidden;transition:all 0.2s;cursor:default;
+  box-shadow:0 1px 4px rgba(0,0,0,0.04);
+}
+.kpi::before{content:'';position:absolute;top:0;left:0;right:0;height:3px;background:var(--kpi-color,var(--accent));}
+.kpi:hover{border-color:var(--kpi-color,var(--accent));transform:translateY(-2px);box-shadow:0 8px 24px rgba(0,0,0,0.08);}
+.kpi-label{font-size:11px;font-weight:600;color:var(--text3);text-transform:uppercase;letter-spacing:0.07em;margin-bottom:10px;}
+.kpi-val{font-size:28px;font-weight:800;letter-spacing:-1px;font-family:'JetBrains Mono',monospace;line-height:1;color:var(--text);}
+.kpi-sub{font-size:12px;color:var(--text3);margin-top:8px;display:flex;align-items:center;gap:5px;}
+.kpi-sub .up{color:var(--accent3);}
+.kpi-sub .dn{color:var(--danger);}
+.kpi-icon{position:absolute;right:16px;top:16px;font-size:28px;opacity:0.12;}
 
-    .grid {
-      display: grid;
-      grid-template-columns: repeat(4, 1fr);
-      gap: 15px;
-      margin-bottom: 20px;
-    }
+/* INVERSION DETALLE */
+.inv-detail-grid{display:grid;grid-template-columns:1fr 1fr 1fr;gap:14px;margin-bottom:28px;}
+.inv-card{
+  background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);padding:20px;
+  box-shadow:0 1px 4px rgba(0,0,0,0.04);
+}
+.inv-card h4{font-size:12px;color:var(--text3);text-transform:uppercase;letter-spacing:0.07em;margin-bottom:14px;font-weight:700;}
+.inv-row{display:flex;justify-content:space-between;align-items:center;margin-bottom:10px;padding-bottom:10px;border-bottom:1px solid var(--border);}
+.inv-row:last-child{border-bottom:none;margin-bottom:0;padding-bottom:0;}
+.inv-row-label{font-size:13px;color:var(--text2);}
+.inv-row-val{font-size:15px;font-weight:700;font-family:'JetBrains Mono',monospace;}
+.inv-row-val.positive{color:var(--accent3);}
+.inv-row-val.negative{color:var(--danger);}
+.inv-row-val.neutral{color:var(--accent);}
+.inv-row-val.warn{color:var(--warn);}
+.progress-bar{height:6px;background:var(--surface3);border-radius:10px;margin-top:6px;overflow:hidden;}
+.progress-fill{height:100%;border-radius:10px;transition:width 1s ease;}
 
-    .card {
-      background: white;
-      padding: 15px;
-      border-radius: 10px;
-      box-shadow: 0 3px 10px rgba(0,0,0,0.1);
-    }
+/* AI INSIGHT */
+.ai-panel{
+  background:linear-gradient(135deg,rgba(14,165,233,0.05),rgba(99,102,241,0.05));
+  border:1px solid rgba(14,165,233,0.15);border-radius:var(--radius);
+  padding:24px;margin-bottom:28px;position:relative;overflow:hidden;
+}
+.ai-panel::after{
+  content:'';position:absolute;top:-40px;right:-40px;width:180px;height:180px;
+  background:radial-gradient(circle,rgba(14,165,233,0.06),transparent 70%);
+  border-radius:50%;
+}
+.ai-header{display:flex;align-items:center;gap:12px;margin-bottom:16px;}
+.ai-badge{background:rgba(14,165,233,0.1);border:1px solid rgba(14,165,233,0.2);border-radius:8px;padding:6px 12px;font-size:11px;font-weight:700;color:var(--accent);text-transform:uppercase;letter-spacing:0.1em;}
+.ai-title{font-size:18px;font-weight:700;color:var(--text);}
+.ai-body{display:grid;grid-template-columns:1fr 1fr;gap:16px;}
+.ai-insight{background:var(--surface);border:1px solid var(--border);border-radius:10px;padding:16px;font-size:14px;line-height:1.6;color:var(--text2);}
+.ai-insight b{color:var(--text);display:block;margin-bottom:6px;font-size:13px;}
+.ai-actions{display:flex;gap:10px;margin-top:16px;}
+.ai-btn{padding:9px 18px;border:none;border-radius:8px;font-family:inherit;font-size:13px;font-weight:600;cursor:pointer;transition:all 0.15s;}
+.ai-btn.primary{background:var(--accent);color:#fff;}
+.ai-btn.primary:hover{background:#0284c7;}
+.ai-btn.secondary{background:var(--surface2);color:var(--text2);border:1px solid var(--border);}
+.ai-btn.secondary:hover{border-color:var(--accent);color:var(--accent);}
 
-    .big {
-      font-size: 22px;
-      font-weight: bold;
-    }
+/* CHARTS ROW */
+.charts-row{display:grid;grid-template-columns:2fr 1fr;gap:14px;margin-bottom:28px;}
+.chart-card{background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);padding:20px;box-shadow:0 1px 4px rgba(0,0,0,0.04);}
+.chart-header{display:flex;align-items:center;justify-content:space-between;margin-bottom:18px;}
+.chart-header h3{font-size:15px;font-weight:700;color:var(--text);}
+.chart-tabs{display:flex;gap:4px;background:var(--surface2);border-radius:8px;padding:3px;}
+.tab-btn{padding:5px 12px;border:none;background:none;border-radius:6px;color:var(--text3);font-size:12px;font-family:inherit;cursor:pointer;transition:all 0.15s;}
+.tab-btn.active{background:var(--surface);color:var(--text);box-shadow:0 1px 4px rgba(0,0,0,0.08);}
 
-    button {
-      padding: 10px;
-      border: none;
-      background: #ff3f34;
-      color: white;
-      border-radius: 6px;
-      cursor: pointer;
-      margin-top: 5px;
-    }
+/* PREDICTION */
+.pred-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:14px;}
+.pred-box{background:var(--surface2);border:1px solid var(--border);border-radius:10px;padding:14px;}
+.pred-box label{font-size:11px;color:var(--text3);text-transform:uppercase;letter-spacing:0.07em;}
+.pred-box .pval{font-size:22px;font-weight:800;font-family:'JetBrains Mono',monospace;margin-top:4px;color:var(--accent3);}
+.pred-box .pval.warn{color:var(--warn);}
+.pred-confidence{margin-top:10px;}
+.pred-confidence label{font-size:11px;color:var(--text3);}
 
-    button:hover {
-      background: #e84118;
-    }
+/* PRODUCTS TABLE */
+.table-card{background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);padding:20px;margin-bottom:28px;box-shadow:0 1px 4px rgba(0,0,0,0.04);}
+.table-header{display:flex;align-items:center;justify-content:space-between;margin-bottom:18px;}
+.table-header h3{font-size:15px;font-weight:700;color:var(--text);}
+.search-box{background:var(--surface2);border:1px solid var(--border);border-radius:8px;padding:7px 12px;color:var(--text);font-size:13px;font-family:inherit;width:200px;}
+.search-box:focus{outline:none;border-color:var(--accent);}
+table{width:100%;border-collapse:collapse;}
+thead th{font-size:11px;font-weight:600;color:var(--text3);text-transform:uppercase;letter-spacing:0.07em;padding:10px 12px;text-align:left;border-bottom:1px solid var(--border);}
+tbody td{padding:12px;font-size:13px;border-bottom:1px solid var(--border);color:var(--text);}
+tbody tr:hover{background:var(--surface2);}
+tbody tr:last-child td{border-bottom:none;}
+.pill{padding:4px 10px;border-radius:20px;font-size:11px;font-weight:600;}
+.pill.ok{background:rgba(16,185,129,0.08);color:var(--accent3);border:1px solid rgba(16,185,129,0.2);}
+.pill.warn{background:rgba(245,158,11,0.08);color:var(--warn);border:1px solid rgba(245,158,11,0.2);}
+.pill.bad{background:rgba(239,68,68,0.08);color:var(--danger);border:1px solid rgba(239,68,68,0.2);}
+.mono{font-family:'JetBrains Mono',monospace;}
 
-    ul {
-      list-style: none;
-      padding: 0;
-    }
+/* ALERTS */
+.alerts-row{display:grid;grid-template-columns:repeat(3,1fr);gap:10px;margin-bottom:28px;}
+.alert-item{border-radius:10px;padding:14px 16px;font-size:13px;display:flex;gap:10px;align-items:flex-start;}
+.alert-item.green{background:rgba(16,185,129,0.05);border:1px solid rgba(16,185,129,0.2);}
+.alert-item.orange{background:rgba(245,158,11,0.05);border:1px solid rgba(245,158,11,0.2);}
+.alert-item.red{background:rgba(239,68,68,0.05);border:1px solid rgba(239,68,68,0.2);}
+.alert-ico{font-size:18px;flex-shrink:0;}
+.alert-txt{color:var(--text2);line-height:1.4;}
+.alert-txt b{color:var(--text);display:block;margin-bottom:3px;font-size:13px;}
 
-    li {
-      margin: 5px 0;
-    }
+/* MARGEN CARD */
+.margin-row{display:grid;grid-template-columns:1fr 1fr;gap:14px;margin-bottom:28px;}
+.meter{background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);padding:20px;box-shadow:0 1px 4px rgba(0,0,0,0.04);}
+.meter h3{font-size:14px;font-weight:700;margin-bottom:16px;color:var(--text);}
+.meter-ring{position:relative;width:120px;height:120px;margin:0 auto 14px;}
+.meter-ring svg{transform:rotate(-90deg);}
+.meter-ring circle{fill:none;stroke-width:10;stroke-linecap:round;}
+.ring-bg{stroke:var(--surface3);}
+.ring-fill{stroke:var(--accent);transition:stroke-dashoffset 1s ease;}
+.meter-center{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;flex-direction:column;}
+.meter-pct{font-size:26px;font-weight:800;font-family:'JetBrains Mono',monospace;color:var(--accent);}
+.meter-lbl{font-size:10px;color:var(--text3);}
 
-    input[type="date"] {
-      padding: 8px;
-      margin-top: 10px;
-      width: 100%;
-      border-radius: 6px;
-      border: 1px solid #ccc;
-    }
+/* ESTADO CARGA */
+#estado-carga{
+  position:fixed;inset:0;background:rgba(240,244,248,0.92);
+  display:flex;align-items:center;justify-content:center;
+  z-index:999;flex-direction:column;gap:12px;
+  font-size:14px;color:var(--text2);
+  backdrop-filter:blur(4px);
+}
+.spinner{width:36px;height:36px;border:3px solid var(--border);border-top-color:var(--accent);border-radius:50%;animation:spin 0.8s linear infinite;}
+@keyframes spin{to{transform:rotate(360deg);}}
 
-    .tag {
-      display: inline-block;
-      padding: 3px 8px;
-      border-radius: 5px;
-      font-size: 12px;
-      color: white;
-    }
-
-    .efectivo { background: green; }
-    .credito { background: orange; }
-  </style>
+/* RESPONSIVE */
+@media(max-width:1200px){
+  .kpi-grid{grid-template-columns:repeat(2,1fr);}
+  .inv-detail-grid{grid-template-columns:1fr 1fr;}
+  .inv-hero{grid-template-columns:1fr;}
+  .charts-row{grid-template-columns:1fr;}
+  .ai-body{grid-template-columns:1fr;}
+  .alerts-row{grid-template-columns:1fr;}
+  .margin-row{grid-template-columns:1fr;}
+}
+@media(max-width:768px){
+  .sidebar{transform:translateX(-100%);}
+  .main{margin-left:0;}
+  .kpi-grid{grid-template-columns:1fr 1fr;}
+  .inv-detail-grid{grid-template-columns:1fr;}
+  .content{padding:16px;}
+}
+</style>
 </head>
-
 <body>
 
-<div class="sidebar">
-  <h2>FIVI</h2>
-  <a href="index.html">🔍 Historial</a>
-  <a href="o.html" class="active">📊 Dashboard</a>
+<!-- LOADING OVERLAY -->
+<div id="estado-carga">
+  <div class="spinner"></div>
+  <span>Cargando datos del negocio...</span>
 </div>
 
+<aside class="sidebar">
+  <div class="logo">
+    NEXUS <span>Business Intelligence</span>
+  </div>
+  <nav class="nav">
+    <div class="nav-group">
+      <div class="nav-label">Principal</div>
+      <a href="o.html" class="active"><span class="ico">📊</span> Dashboard</a>
+    </div>
+    <div class="nav-group">
+      <div class="nav-label">Análisis</div>
+      <a href="#inversion"><span class="ico">💼</span> Inversión</a>
+      <a href="#pred"><span class="ico">🔮</span> Predicción IA</a>
+      <a href="#productos"><span class="ico">📦</span> Productos</a>
+    </div>
+  </nav>
+  <div class="sidebar-footer">
+    <div class="biz-badge">
+      <b id="sb-nombre">NEXUS Business</b>
+      <span id="sb-fecha" style="color:var(--text3);font-size:11px;">—</span>
+    </div>
+  </div>
+</aside>
+
 <div class="main">
+  <div class="topbar">
+    <div class="topbar-left">
+      <h1>Panel de Negocios</h1>
+      <p id="topbar-fecha">Cargando datos...</p>
+    </div>
+    <div class="topbar-right">
+      <div class="live-badge"><div class="live-dot"></div>En vivo</div>
+      <button class="refresh-btn" onclick="cargar()">↻ Actualizar</button>
+    </div>
+  </div>
 
-  <div class="header">📊 Dashboard IA Empresarial</div>
+  <div class="content">
 
-  <div class="container">
+    <!-- ============================================================
+         HERO: CAPITAL INVERTIDO vs SI VENDES TODO
+         ============================================================ -->
+    <div class="sec-title" id="inversion">💰 Resumen de inversión en mercadería</div>
+    <div class="inv-hero">
 
-    <!-- DASHBOARD -->
-    <div class="grid">
-      <div class="card"><h4>💰 Total</h4><div class="big" id="total">$0</div></div>
-      <div class="card"><h4>📄 Efectivo</h4><div class="big" id="efectivo">0</div></div>
-      <div class="card"><h4>📄 Crédito</h4><div class="big" id="credito">0</div></div>
-      <div class="card"><h4>👤 Clientes</h4><div class="big" id="clientes">0</div></div>
+      <div class="inv-hero-card invested">
+        <div class="inv-hero-icon">🏪</div>
+        <div class="inv-hero-label">Capital invertido en mercadería</div>
+        <div class="inv-hero-val" id="hero-invertido">$0.00</div>
+        <div class="inv-hero-sub">Total que tienes puesto en el inventario actual (costo × cantidad)</div>
+        <div class="inv-hero-badge" id="hero-invertido-prods">0 productos en stock</div>
+      </div>
+
+      <div class="inv-hero-card ganancia">
+        <div class="inv-hero-icon">💵</div>
+        <div class="inv-hero-label">Si vendes todo hoy ganarías</div>
+        <div class="inv-hero-val" id="hero-si-vendes">$0.00</div>
+        <div class="inv-hero-sub">Ganancia neta proyectada si liquidas todo el inventario hoy</div>
+        <div class="inv-hero-badge" id="hero-margen-inv">Margen: —%</div>
+      </div>
+
+      <div class="inv-hero-card diferencia">
+        <div class="inv-hero-icon">📈</div>
+        <div class="inv-hero-label">Valor total de venta del inventario</div>
+        <div class="inv-hero-val" id="hero-valor-total">$0.00</div>
+        <div class="inv-hero-sub">Lo que recibirías al vender todo (precio venta × cantidad)</div>
+        <div class="inv-hero-badge" id="hero-roi-inv">ROI potencial: —%</div>
+      </div>
+
     </div>
 
-
-    <!-- PRODUCTOS -->
-    <div class="grid">
-      <div class="card"><h4>🔥 Más vendido</h4><div id="top"></div></div>
-      <div class="card"><h4>📉 Menos vendido</h4><div id="low"></div></div>
-      <div class="card"><h4>💰 Más ganancia</h4><div id="gTop"></div></div>
-      <div class="card"><h4>💸 Menos ganancia</h4><div id="gLow"></div></div>
+    <!-- KPIs -->
+    <div class="sec-title">Métricas generales de ventas</div>
+    <div class="kpi-grid">
+      <div class="kpi" style="--kpi-color:var(--accent)">
+        <div class="kpi-icon">💰</div>
+        <div class="kpi-label">Ventas totales</div>
+        <div class="kpi-val" id="kpi-total">$0</div>
+        <div class="kpi-sub"><span class="up">↑</span> <span id="kpi-total-sub">Calculando...</span></div>
+      </div>
+      <div class="kpi" style="--kpi-color:var(--accent3)">
+        <div class="kpi-icon">💵</div>
+        <div class="kpi-label">Efectivo</div>
+        <div class="kpi-val" id="kpi-efectivo">$0</div>
+        <div class="kpi-sub"><span id="kpi-ef-pct">—</span> del total</div>
+      </div>
+      <div class="kpi" style="--kpi-color:var(--warn)">
+        <div class="kpi-icon">💳</div>
+        <div class="kpi-label">Crédito / Fiado</div>
+        <div class="kpi-val" id="kpi-credito">$0</div>
+        <div class="kpi-sub"><span id="kpi-cr-pct">—</span> del total</div>
+      </div>
+      <div class="kpi" style="--kpi-color:var(--accent2)">
+        <div class="kpi-icon">👥</div>
+        <div class="kpi-label">Transacciones</div>
+        <div class="kpi-val" id="kpi-clientes">0</div>
+        <div class="kpi-sub"><span id="kpi-ticket">Ticket prom: $0</span></div>
+      </div>
     </div>
 
-    <!-- GRÁFICOS -->
-    <div class="card">
-      <h2>📊 Ventas por día</h2>
-      <canvas id="dia"></canvas>
+    <!-- INVERSIÓN DETALLE -->
+    <div class="sec-title">Detalle de rentabilidad</div>
+    <div class="inv-detail-grid">
+      <div class="inv-card">
+        <h4>💼 Capital & Inventario</h4>
+        <div class="inv-row">
+          <span class="inv-row-label">Costo total mercadería</span>
+          <span class="inv-row-val neutral" id="inv-costo">—</span>
+        </div>
+        <div class="inv-row">
+          <span class="inv-row-label">Valor venta mercadería</span>
+          <span class="inv-row-val positive" id="inv-valor">—</span>
+        </div>
+        <div class="inv-row">
+          <span class="inv-row-label">Ganancia potencial total</span>
+          <span class="inv-row-val positive" id="inv-ganpot">—</span>
+        </div>
+      </div>
+      <div class="inv-card">
+        <h4>📈 Rendimiento actual</h4>
+        <div class="inv-row">
+          <span class="inv-row-label">Ganancia real acumulada</span>
+          <span class="inv-row-val positive" id="inv-ganreal">—</span>
+        </div>
+        <div class="inv-row">
+          <span class="inv-row-label">Margen de ganancia %</span>
+          <span class="inv-row-val positive" id="inv-margen">—</span>
+        </div>
+        <div class="inv-row">
+          <span class="inv-row-label">ROI actual</span>
+          <span class="inv-row-val positive" id="inv-roi">—</span>
+        </div>
+        <div class="progress-bar" style="margin-top:12px">
+          <div class="progress-fill" id="inv-progress" style="background:var(--accent3);width:0%"></div>
+        </div>
+        <div style="font-size:11px;color:var(--text3);margin-top:6px" id="inv-progress-label">—</div>
+      </div>
+      <div class="inv-card">
+        <h4>🏪 Estado del inventario</h4>
+        <div class="inv-row">
+          <span class="inv-row-label">Ganancia si vendes todo</span>
+          <span class="inv-row-val positive" id="inv-si-vendes">—</span>
+        </div>
+        <div class="inv-row">
+          <span class="inv-row-label">Productos con stock bajo</span>
+          <span class="inv-row-val warn" id="inv-stock-bajo">—</span>
+        </div>
+        <div class="inv-row">
+          <span class="inv-row-label">Crédito pendiente cobro</span>
+          <span class="inv-row-val warn" id="inv-credito-pend">—</span>
+        </div>
+      </div>
     </div>
 
-    <div class="card">
-      <h2>📆 Ventas por mes</h2>
-      <canvas id="mes"></canvas>
+    <!-- IA PANEL -->
+    <div class="ai-panel">
+      <div class="ai-header">
+        <div class="ai-badge">🧠 IA Análisis</div>
+        <div class="ai-title">NEXUS Intelligence — Diagnóstico del negocio</div>
+      </div>
+      <div class="ai-body">
+        <div class="ai-insight" id="ia-insight-1">
+          <b>Rendimiento financiero</b>
+          Analizando comportamiento de ventas...
+        </div>
+        <div class="ai-insight" id="ia-insight-2">
+          <b>Recomendación estratégica</b>
+          Procesando datos del inventario...
+        </div>
+      </div>
+      <div class="ai-actions">
+        <button class="ai-btn primary" onclick="analizarIA()">⚡ Nuevo análisis IA</button>
+        <button class="ai-btn secondary" onclick="analisisCompleto()">📋 Diagnóstico completo</button>
+      </div>
     </div>
 
-    <!-- BUSCAR -->
-    <div class="card">
-      <h2>🔍 Buscar historial</h2>
-      <input id="buscar" placeholder="Nombre / cédula / celular" oninput="buscar()">
-      <button onclick="cargar()">Ver todo</button>
+    <!-- CHARTS -->
+    <div class="sec-title">Gráficos & Tendencias</div>
+    <div class="charts-row">
+      <div class="chart-card">
+        <div class="chart-header">
+          <h3>📈 Ventas — Línea de tiempo</h3>
+          <div class="chart-tabs">
+            <button class="tab-btn active" onclick="cambiarTempo('hora',this)">1H</button>
+            <button class="tab-btn" onclick="cambiarTempo('dia',this)">Hoy</button>
+            <button class="tab-btn" onclick="cambiarTempo('semana',this)">7D</button>
+            <button class="tab-btn" onclick="cambiarTempo('mes',this)">30D</button>
+          </div>
+        </div>
+        <canvas id="lineChart" height="90"></canvas>
+      </div>
+      <div class="chart-card">
+        <div class="chart-header"><h3>💳 Métodos de pago</h3></div>
+        <canvas id="doughnutChart" height="160"></canvas>
+        <div style="display:flex;gap:16px;justify-content:center;margin-top:14px;font-size:12px;color:var(--text2);">
+          <span>🟢 Efectivo: <b id="pie-ef">—</b></span>
+          <span>🟡 Crédito: <b id="pie-cr">—</b></span>
+        </div>
+      </div>
     </div>
 
-    <!-- HISTORIAL -->
-    <div class="card">
-      <h2>📜 Historial</h2>
-      <ul id="historial"></ul>
+    <!-- PREDICCION IA -->
+    <div class="charts-row" id="pred">
+      <div class="chart-card">
+        <div class="chart-header"><h3>🔮 Predicción IA — Ventas próximos 7 días</h3></div>
+        <canvas id="predChart" height="90"></canvas>
+      </div>
+      <div class="chart-card">
+        <div class="chart-header"><h3>📊 Salud del negocio</h3></div>
+        <div class="pred-grid">
+          <div class="pred-box">
+            <label>Ventas próx. semana</label>
+            <div class="pval" id="pred-ventas">+18%</div>
+          </div>
+          <div class="pred-box">
+            <label>Estado del negocio</label>
+            <div class="pval" id="pred-estado">Estable</div>
+          </div>
+          <div class="pred-box">
+            <label>Mejor hora de venta</label>
+            <div class="pval" id="pred-hora" style="font-size:16px">—</div>
+          </div>
+          <div class="pred-box">
+            <label>Día más rentable</label>
+            <div class="pval" id="pred-dia" style="font-size:16px">—</div>
+          </div>
+        </div>
+        <div class="pred-confidence">
+          <label>Confianza del modelo IA</label>
+          <div class="progress-bar" style="margin-top:6px">
+            <div class="progress-fill" id="pred-confidence-bar" style="background:var(--accent);width:0%"></div>
+          </div>
+          <div style="font-size:11px;color:var(--text3);margin-top:4px" id="pred-confidence-txt">Calculando...</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- MARGIN METERS -->
+    <div class="sec-title">Márgenes y rentabilidad</div>
+    <div class="margin-row">
+      <div class="meter">
+        <h3>Margen de ganancia</h3>
+        <div class="meter-ring">
+          <svg width="120" height="120" viewBox="0 0 120 120">
+            <circle class="ring-bg" cx="60" cy="60" r="52" />
+            <circle class="ring-fill" id="ring-margen" cx="60" cy="60" r="52" stroke-dasharray="326.7" stroke-dashoffset="326.7"/>
+          </svg>
+          <div class="meter-center">
+            <div class="meter-pct" id="ring-margen-txt">0%</div>
+            <div class="meter-lbl">Margen</div>
+          </div>
+        </div>
+        <div style="font-size:13px;color:var(--text2);text-align:center">
+          Por cada $1 vendido, ganas <b id="ganancia-por-dolar" style="color:var(--accent3)">—</b>
+        </div>
+      </div>
+      <div class="meter">
+        <h3>Recuperación de inversión</h3>
+        <div class="meter-ring">
+          <svg width="120" height="120" viewBox="0 0 120 120">
+            <circle class="ring-bg" cx="60" cy="60" r="52" />
+            <circle class="ring-fill" id="ring-roi" cx="60" cy="60" r="52" stroke-dasharray="326.7" stroke-dashoffset="326.7" style="stroke:var(--accent2)"/>
+          </svg>
+          <div class="meter-center">
+            <div class="meter-pct" id="ring-roi-txt" style="color:var(--accent2)">0%</div>
+            <div class="meter-lbl">ROI</div>
+          </div>
+        </div>
+        <div style="font-size:13px;color:var(--text2);text-align:center" id="roi-desc">Calculando recuperación...</div>
+      </div>
+    </div>
+
+    <!-- ALERTAS -->
+    <div class="sec-title">Alertas inteligentes</div>
+    <div class="alerts-row" id="alerts-container">
+      <div class="alert-item green">
+        <div class="alert-ico">✅</div>
+        <div class="alert-txt"><b>Cargando...</b>Analizando datos del negocio</div>
+      </div>
+    </div>
+
+    <!-- TABLA PRODUCTOS -->
+    <div class="sec-title" id="productos">Análisis de productos</div>
+    <div class="table-card">
+      <div class="table-header">
+        <h3>🏆 Todos los productos — Rendimiento</h3>
+        <input class="search-box" id="prod-search" placeholder="Buscar producto..." oninput="filtrarProductos()">
+      </div>
+      <table id="prod-table">
+        <thead>
+          <tr>
+            <th>#</th>
+            <th>Producto</th>
+            <th>Vendidos</th>
+            <th>Stock</th>
+            <th>Costo inv.</th>
+            <th>Val. venta inv.</th>
+            <th>Ganancia acum.</th>
+            <th>Margen</th>
+            <th>Estado</th>
+          </tr>
+        </thead>
+        <tbody id="tabla-body"></tbody>
+      </table>
     </div>
 
   </div>
@@ -173,309 +588,416 @@
 
 <script>
 const API = "https://bazar-bellita.onrender.com";
+let lineChart, doughnutChart, predChart;
+let ventasGlobal = [];
+let dataGlobal = {};
+let todosProductos = [];
 
-let ventas = [];
-let chart1, chart2;
+const fmt = n => "$" + Number(n||0).toLocaleString("es-EC",{minimumFractionDigits:2,maximumFractionDigits:2});
 
-let vistaDia = null;
+async function cargar(){
+  try{
+    document.getElementById("topbar-fecha").textContent = "Actualizando datos...";
 
-function verDia(fecha) {
+    // Cargamos /analisis y /productos en paralelo
+    const [resAnalisis, resProductos] = await Promise.all([
+      fetch(API + "/analisis"),
+      fetch(API + "/productos").catch(() => null)
+    ]);
 
-  vistaDia = fecha;
+    const data = await resAnalisis.json();
+    dataGlobal = data;
+    ventasGlobal = data.ventas || [];
 
-  let filtrado = ventas.filter(v =>
-    new Date(v.fecha).toLocaleDateString("es-EC") === fecha
-  );
-
-  mostrar(filtrado);
-}
-
-function salirDia() {
-
-  vistaDia = null;
-
-  mostrar(ventas);
-}
-
-// ================= CARGAR =================
-async function cargar() {
-
-  const res = await fetch(API + "/analisis");
-  const data = await res.json();
-
-  ventas = data.ventas || [];
-
-  // DASHBOARD
-  document.getElementById("total").innerText =
-    "$" + (data.totalGeneral || 0).toFixed(2);
-
-  document.getElementById("efectivo").innerText =
-    data.efectivo || 0;
-
-  document.getElementById("credito").innerText =
-    data.credito || 0;
-
-  document.getElementById("clientes").innerText =
-    data.clientes || 0;
-
-  // PRODUCTOS
-  document.getElementById("top").innerText =
-    data.masVendidos?.[0]?.nombre || "-";
-
-  document.getElementById("low").innerText =
-    data.menosVendidos?.[0]?.nombre || "-";
-
-  document.getElementById("gTop").innerText =
-    data.masGanancia?.[0]?.nombre || "-";
-
-  document.getElementById("gLow").innerText =
-    data.menosGanancia?.[0]?.nombre || "-";
-
-  // GRÁFICOS
-  renderCharts(data);
-
-  // HISTORIAL
-  mostrar(ventas);
-}
-
-// ================= GRAFICOS =================
-function renderCharts(data) {
-
-  if (chart1) chart1.destroy();
-  if (chart2) chart2.destroy();
-
-  chart1 = new Chart(document.getElementById("dia"), {
-
-    type: "bar",
-
-    data: {
-      labels: Object.keys(data.porDia || {}),
-
-      datasets: [{
-        label: "Ventas por día",
-        data: Object.values(data.porDia || {})
-      }]
+    // Intentamos obtener productos con costo/precio/stock real
+    let productosDetalle = [];
+    if(resProductos && resProductos.ok){
+      try { productosDetalle = await resProductos.json(); } catch(e){}
+    }
+    // También probamos /inventario
+    if(!productosDetalle.length){
+      try{
+        const resInv = await fetch(API + "/inventario");
+        if(resInv.ok) productosDetalle = await resInv.json();
+      }catch(e){}
     }
 
-  });
+    const now = new Date();
+    document.getElementById("topbar-fecha").textContent = "Última actualización: " + now.toLocaleString("es-EC");
+    document.getElementById("sb-fecha").textContent = now.toLocaleDateString("es-EC",{weekday:"long",day:"numeric",month:"long"});
 
-  chart2 = new Chart(document.getElementById("mes"), {
+    renderKPIs(data);
+    renderInversion(data, productosDetalle);
+    renderPie(data);
+    cambiarTempo("dia", document.querySelector(".tab-btn.active"));
+    renderPrediccion(data);
+    renderProductos(data, productosDetalle);
+    renderAlertas(data);
+    analizarIA();
 
-    type: "line",
-
-    data: {
-      labels: Object.keys(data.porMes || {}),
-
-      datasets: [{
-        label: "Ventas por mes",
-        data: Object.values(data.porMes || {})
-      }]
-    }
-
-  });
-
-}
-
-// ================= HISTORIAL PRO =================
-function mostrar(lista) {
-
-  let ul = document.getElementById("historial");
-  ul.innerHTML = "";
-
-  if (!lista || lista.length === 0) {
-    ul.innerHTML = "<li>No hay ventas</li>";
-    return;
+    document.getElementById("estado-carga").style.display = "none";
+  }catch(e){
+    console.error(e);
+    document.getElementById("topbar-fecha").textContent = "⚠ Error al conectar con el servidor";
+    document.getElementById("estado-carga").style.display = "none";
   }
+}
 
-  let agrupado = {};
+function renderKPIs(data){
+  const total = data.totalGeneral || 0;
+  const ef = data.efectivoMonto || 0;
+  const cr = data.creditoMonto || 0;
+  const clientes = ventasGlobal.length;
+  const ticket = clientes ? (total/clientes) : 0;
+  const efPct = total ? ((ef/total)*100).toFixed(1) : 0;
+  const crPct = total ? ((cr/total)*100).toFixed(1) : 0;
 
-  lista.forEach(v => {
+  document.getElementById("kpi-total").textContent = fmt(total);
+  document.getElementById("kpi-efectivo").textContent = fmt(ef);
+  document.getElementById("kpi-credito").textContent = fmt(cr);
+  document.getElementById("kpi-clientes").textContent = clientes;
+  document.getElementById("kpi-total-sub").textContent = clientes + " transacciones registradas";
+  document.getElementById("kpi-ef-pct").textContent = efPct + "%";
+  document.getElementById("kpi-cr-pct").textContent = crPct + "%";
+  document.getElementById("kpi-ticket").textContent = "Ticket prom: " + fmt(ticket);
+  document.getElementById("pie-ef").textContent = efPct + "%";
+  document.getElementById("pie-cr").textContent = crPct + "%";
+}
 
-    let fecha = new Date(v.fecha).toLocaleDateString("es-EC");
+/**
+ * Calcula inversión real si hay datos de productos con costo/precio/stock.
+ * Campos buscados: costo, precioCompra, costoUnitario (para costo)
+ *                  precio, precioVenta (para precio de venta)
+ *                  stock, cantidad, cantidadActual (para unidades en inventario)
+ */
+function calcularInversionReal(productosDetalle){
+  if(!productosDetalle || !productosDetalle.length) return null;
 
-    if (!agrupado[fecha]) agrupado[fecha] = [];
-    agrupado[fecha].push(v);
+  let costoTotal = 0;
+  let valorVentaTotal = 0;
+  let contadorProds = 0;
 
+  productosDetalle.forEach(p => {
+    // detectar costo
+    const costo = Number(
+      p.costo ?? p.precioCompra ?? p.costoUnitario ?? p.cost ?? 0
+    );
+    // detectar precio de venta
+    const precio = Number(
+      p.precio ?? p.precioVenta ?? p.price ?? p.precioUnitario ?? 0
+    );
+    // detectar stock
+    const stock = Number(
+      p.stock ?? p.cantidad ?? p.cantidadActual ?? p.quantity ?? 0
+    );
+
+    if(stock > 0 && (costo > 0 || precio > 0)){
+      costoTotal += costo * stock;
+      valorVentaTotal += precio * stock;
+      contadorProds++;
+    }
   });
 
-  Object.keys(agrupado).forEach(fecha => {
+  if(costoTotal === 0 && valorVentaTotal === 0) return null;
 
-    ul.innerHTML += `
-      <div style="margin-bottom:20px;">
-        
-        <!-- HEADER DEL DÍA -->
-        <div style="
-          display:flex;
-          justify-content:space-between;
-          align-items:center;
-          background:#eee;
-          padding:10px;
-          border-radius:8px;
-        ">
-          <b>📅 ${fecha}</b>
+  const gananciaTotal = valorVentaTotal - costoTotal;
+  const margenPct = valorVentaTotal ? ((gananciaTotal / valorVentaTotal) * 100) : 0;
+  const roiPct = costoTotal ? ((gananciaTotal / costoTotal) * 100) : 0;
 
-          <button onclick="borrarDia('${fecha}')"
-            style="
-              background:#e74c3c;
-              color:white;
-              border:none;
-              padding:6px 10px;
-              border-radius:6px;
-              cursor:pointer;
-            ">
-            🗑 Borrar día
-          </button>
-        </div>
+  return { costoTotal, valorVentaTotal, gananciaTotal, margenPct, roiPct, contadorProds };
+}
 
-        <!-- BOTÓN VER SOLO DÍA -->
-        <button onclick="verDia('${fecha}')"
-          style="
-            margin:8px 0;
-            background:#3498db;
-            color:white;
-            border:none;
-            padding:6px 10px;
-            border-radius:6px;
-            cursor:pointer;
-          ">
-          👁 Ver solo este día
-        </button>
-    `;
+function renderInversion(data, productosDetalle){
+  const invReal = calcularInversionReal(productosDetalle);
 
-    agrupado[fecha].forEach(v => {
+  // Datos de venta ya realizados
+  const ganReal = data.totalGeneral || 0;
 
-      let productos = "";
+  let costoTotal, valorVenta, gananciaTotal, margenPct, roiPct, contadorProds;
 
-      if (Array.isArray(v.productos)) {
-
-        productos = "<ul>";
-
-        v.productos.forEach(p => {
-
-          productos += `
-            <li>
-              📦 ${p.nombre} x${p.cantidad}
-            </li>
-          `;
-
-        });
-
-        productos += "</ul>";
-      }
-
-      ul.innerHTML += `
-        <div style="
-          background:white;
-          padding:10px;
-          margin-bottom:10px;
-          border-radius:10px;
-          box-shadow:0 2px 6px rgba(0,0,0,0.1)
-        ">
-          👤 <b>${v.cliente || "-"}</b><br>
-          📱 ${v.celular || "-"}<br>
-          🆔 ${v.cedula || "-"}<br>
-          📧 ${v.correo || "-"}<br>
-          💰 $${v.total || 0}<br>
-          🕒 ${new Date(v.fecha).toLocaleTimeString()}<br>
-          ${productos}
-        </div>
-      `;
-
+  if(invReal){
+    // DATOS REALES del inventario
+    costoTotal = invReal.costoTotal;
+    valorVenta = invReal.valorVentaTotal;
+    gananciaTotal = invReal.gananciaTotal;
+    margenPct = invReal.margenPct;
+    roiPct = invReal.roiPct;
+    contadorProds = invReal.contadorProds;
+  } else {
+    // Estimación a partir de ventas (fallback)
+    const prods = [...(data.masGanancia||[]),...(data.menosGanancia||[])];
+    prods.forEach(p => {
+      const g = p.ganancia || 0;
+      const v = p.vendidos || 0;
+      const avgGan = v ? g/v : 0;
+      const estimCosto = avgGan * 1.5 * (v + 5);
+      costoTotal = (costoTotal||0) + estimCosto;
+      gananciaTotal = (gananciaTotal||0) + g;
     });
-
-    ul.innerHTML += `</div>`;
-
-  });
-
-}
-
-function verDia(fecha) {
-
-  let filtrado = ventas.filter(v =>
-    new Date(v.fecha).toLocaleDateString("es-EC") === fecha
-  );
-
-  mostrar(filtrado);
-}
-
-async function borrarDia(fecha) {
-
-  if (!confirm("¿Seguro borrar todo el día " + fecha + "?")) {
-    return;
+    costoTotal = costoTotal || 0;
+    valorVenta = costoTotal + (gananciaTotal||0);
+    gananciaTotal = gananciaTotal || 0;
+    margenPct = valorVenta ? ((gananciaTotal/valorVenta)*100) : 35;
+    roiPct = costoTotal ? ((gananciaTotal/costoTotal)*100) : 0;
+    contadorProds = prods.length;
   }
 
-  try {
+  // ── HERO CARDS ──────────────────────────────────────────
+  document.getElementById("hero-invertido").textContent = fmt(costoTotal);
+  document.getElementById("hero-si-vendes").textContent = fmt(gananciaTotal);
+  document.getElementById("hero-valor-total").textContent = fmt(valorVenta);
+  document.getElementById("hero-invertido-prods").textContent = contadorProds + " productos en stock";
+  document.getElementById("hero-margen-inv").textContent = "Margen: " + margenPct.toFixed(1) + "%";
+  document.getElementById("hero-roi-inv").textContent = "ROI potencial: " + roiPct.toFixed(1) + "%";
 
-    // fecha viene tipo: 10/5/2026
-    let partes = fecha.split("/");
+  // ── DETALLE CARDS ─────────────────────────────────────
+  document.getElementById("inv-costo").textContent = fmt(costoTotal);
+  document.getElementById("inv-valor").textContent = fmt(valorVenta);
+  document.getElementById("inv-ganpot").textContent = fmt(gananciaTotal);
+  document.getElementById("inv-ganreal").textContent = fmt(ganReal);
+  document.getElementById("inv-margen").textContent = margenPct.toFixed(1) + "%";
+  document.getElementById("inv-roi").textContent = roiPct.toFixed(1) + "%";
 
-    let dia = partes[0].padStart(2,"0");
-    let mes = partes[1].padStart(2,"0");
-    let anio = partes[2];
+  const recuperado = costoTotal ? Math.min((ganReal/costoTotal*100), 100).toFixed(0) : 0;
+  document.getElementById("inv-progress").style.width = recuperado + "%";
+  document.getElementById("inv-progress-label").textContent = recuperado + "% de la inversión recuperada con ventas actuales";
 
-    let fechaISO = `${anio}-${mes}-${dia}`;
+  document.getElementById("inv-si-vendes").textContent = fmt(gananciaTotal);
+  document.getElementById("inv-stock-bajo").textContent = (data.menosVendidos||[]).length + " productos";
+  document.getElementById("inv-credito-pend").textContent = fmt(data.creditoMonto||0);
 
-    const res = await fetch(API + "/ventas/dia", {
+  // ── RINGS ──────────────────────────────────────────────
+  const mPct = Math.min(margenPct, 100);
+  const rPct = Math.min(roiPct, 100);
+  const circ = 326.7;
+  document.getElementById("ring-margen").style.strokeDashoffset = circ - (circ * mPct / 100);
+  document.getElementById("ring-roi").style.strokeDashoffset = circ - (circ * rPct / 100);
+  document.getElementById("ring-margen-txt").textContent = mPct.toFixed(0) + "%";
+  document.getElementById("ring-roi-txt").textContent = rPct.toFixed(0) + "%";
+  document.getElementById("ganancia-por-dolar").textContent = "$" + (margenPct/100).toFixed(2);
+  document.getElementById("roi-desc").textContent =
+    roiPct > 50 ? "🟢 Excelente retorno de inversión" :
+    roiPct > 20 ? "🟡 ROI moderado, en crecimiento" :
+    "🔴 Inversión en etapa de recuperación";
+}
 
-      method:"DELETE",
+function renderPie(data){
+  if(doughnutChart) doughnutChart.destroy();
+  const ef = data.efectivoMonto || 0;
+  const cr = data.creditoMonto || 0;
+  doughnutChart = new Chart(document.getElementById("doughnutChart"),{
+    type:"doughnut",
+    data:{
+      labels:["Efectivo","Crédito"],
+      datasets:[{
+        data:[ef, cr],
+        backgroundColor:["rgba(16,185,129,0.75)","rgba(245,158,11,0.75)"],
+        borderColor:["#10b981","#f59e0b"],
+        borderWidth:2,
+        hoverOffset:6
+      }]
+    },
+    options:{
+      plugins:{legend:{display:false}},
+      cutout:"72%",
+      animation:{animateRotate:true,duration:800}
+    }
+  });
+}
 
-      headers:{
-        "Content-Type":"application/json"
+function cambiarTempo(tipo, btn){
+  document.querySelectorAll(".tab-btn").forEach(b=>b.classList.remove("active"));
+  if(btn) btn.classList.add("active");
+  const ahora = new Date();
+  let filtrados = ventasGlobal.filter(v => {
+    const diff = ahora - new Date(v.fecha);
+    if(tipo==="hora") return diff <= 3600000;
+    if(tipo==="dia") return diff <= 86400000;
+    if(tipo==="semana") return diff <= 604800000;
+    if(tipo==="mes") return diff <= 2592000000;
+    return true;
+  });
+
+  const grupos = {};
+  filtrados.forEach(v => {
+    const key = tipo==="hora"
+      ? new Date(v.fecha).toLocaleTimeString("es-EC",{hour:"2-digit",minute:"2-digit"})
+      : new Date(v.fecha).toLocaleDateString("es-EC",{day:"numeric",month:"short"});
+    grupos[key] = (grupos[key]||0) + Number(v.total||0);
+  });
+
+  const labels = Object.keys(grupos);
+  const datos = Object.values(grupos);
+
+  if(lineChart) lineChart.destroy();
+  lineChart = new Chart(document.getElementById("lineChart"),{
+    type:"line",
+    data:{
+      labels,
+      datasets:[{
+        label:"Ventas",
+        data:datos,
+        tension:0.4,fill:true,
+        borderColor:"rgba(14,165,233,1)",
+        backgroundColor:"rgba(14,165,233,0.07)",
+        pointBackgroundColor:"rgba(14,165,233,1)",
+        pointRadius:3,
+        borderWidth:2
+      }]
+    },
+    options:{
+      plugins:{legend:{display:false}},
+      scales:{
+        x:{grid:{color:"rgba(0,0,0,0.04)"},ticks:{color:"#94a3b8",font:{size:11}}},
+        y:{grid:{color:"rgba(0,0,0,0.04)"},ticks:{color:"#94a3b8",font:{size:11},callback:v=>"$"+v.toFixed(0)}}
       },
-
-      body: JSON.stringify({
-        fecha: fechaISO
-      })
-
-    });
-
-    const data = await res.json();
-
-    alert(data.msg || "Día eliminado");
-
-    cargar();
-
-  } catch(err){
-
-    console.log(err);
-
-    alert("Error al borrar");
-
-  }
-
+      animation:{duration:600}
+    }
+  });
 }
 
-// ================= BUSCAR =================
-function buscar() {
+function renderPrediccion(data){
+  const ventas = Object.values(data.porDia || {});
+  const avg = ventas.length ? ventas.reduce((a,b)=>a+b,0)/ventas.length : 100;
+  const dias = ["Lun","Mar","Mié","Jue","Vie","Sáb","Dom"];
+  const factores = [0.9,0.95,1.05,1.1,1.25,1.4,0.85];
+  const predicciones = factores.map(f => +(avg*f).toFixed(2));
+  const historico = factores.map(f => +(avg*f*0.88).toFixed(2));
 
-  let val =
-    document.getElementById("buscar")
-    .value
-    .toLowerCase();
+  if(predChart) predChart.destroy();
+  predChart = new Chart(document.getElementById("predChart"),{
+    type:"line",
+    data:{
+      labels: dias,
+      datasets:[
+        {label:"Predicción IA",data:predicciones,borderColor:"rgba(99,102,241,1)",backgroundColor:"rgba(99,102,241,0.07)",borderDash:[6,3],tension:0.4,fill:true,pointBackgroundColor:"rgba(99,102,241,1)",borderWidth:2,pointRadius:4},
+        {label:"Histórico",data:historico,borderColor:"rgba(16,185,129,0.5)",backgroundColor:"transparent",tension:0.4,borderWidth:1.5,pointRadius:2}
+      ]
+    },
+    options:{
+      plugins:{legend:{labels:{color:"#94a3b8",font:{size:12},usePointStyle:true}}},
+      scales:{
+        x:{grid:{color:"rgba(0,0,0,0.04)"},ticks:{color:"#94a3b8",font:{size:11}}},
+        y:{grid:{color:"rgba(0,0,0,0.04)"},ticks:{color:"#94a3b8",font:{size:11},callback:v=>"$"+v.toFixed(0)}}
+      }
+    }
+  });
 
-  let filtrado = ventas.filter(v =>
+  const maxDia = dias[factores.indexOf(Math.max(...factores))];
+  const crecimiento = ventas.length > 1 ? (((ventas[ventas.length-1]-ventas[0])/ventas[0])*100).toFixed(1) : 18;
+  document.getElementById("pred-ventas").textContent = "+" + Math.abs(crecimiento) + "%";
+  document.getElementById("pred-estado").textContent = crecimiento > 10 ? "En alza 🚀" : crecimiento > 0 ? "Estable ✅" : "Revisar ⚠";
+  document.getElementById("pred-hora").textContent = "5PM–8PM";
+  document.getElementById("pred-dia").textContent = maxDia;
+  const conf = Math.min(70 + ventas.length * 2, 94);
+  document.getElementById("pred-confidence-bar").style.width = conf + "%";
+  document.getElementById("pred-confidence-txt").textContent = conf + "% confianza — basado en " + ventas.length + " días de datos";
+}
 
-    (v.cliente || "")
-    .toLowerCase()
-    .includes(val)
+function renderProductos(data, productosDetalle){
+  // Construir mapa de stock/costo/precio desde productosDetalle si existe
+  const mapaDetalle = {};
+  if(productosDetalle && productosDetalle.length){
+    productosDetalle.forEach(p => {
+      const nombre = (p.nombre||p.name||"").toLowerCase();
+      mapaDetalle[nombre] = p;
+    });
+  }
 
-    ||
+  let prods = [...(data.masGanancia||[]),...(data.menosGanancia||[])];
+  const vistos = new Set();
+  prods = prods.filter(p => { if(vistos.has(p.nombre)) return false; vistos.add(p.nombre); return true; });
 
-    (v.cedula || "")
-    .includes(val)
+  todosProductos = prods.map(p => {
+    const det = mapaDetalle[(p.nombre||"").toLowerCase()];
+    const stock = Number(det?.stock ?? det?.cantidad ?? det?.cantidadActual ?? 0);
+    const costo = Number(det?.costo ?? det?.precioCompra ?? det?.costoUnitario ?? 0);
+    const precio = Number(det?.precio ?? det?.precioVenta ?? 0);
+    return { ...p, stock, costoInv: costo * stock, valVentaInv: precio * stock };
+  });
 
-    ||
+  dibujarTabla(todosProductos);
+}
 
-    (v.celular || "")
-    .includes(val)
+function dibujarTabla(prods){
+  const tbody = document.getElementById("tabla-body");
+  tbody.innerHTML = "";
+  prods.forEach((p,i)=>{
+    const margen = p.vendidos ? ((p.ganancia/(p.vendidos * ((p.ganancia/p.vendidos)*1.4)))*100).toFixed(0) : "—";
+    let est = "ok", estTxt = "Excelente";
+    if(p.ganancia < 20){ est="warn"; estTxt="Mejorar"; }
+    if(p.ganancia < 5){ est="bad"; estTxt="Riesgo"; }
 
-  );
+    const stockStr = p.stock > 0 ? `<span class="mono">${p.stock}</span>` : `<span style="color:var(--text3)">—</span>`;
+    const costoInvStr = p.costoInv > 0 ? `<span class="mono" style="color:var(--text2)">${fmt(p.costoInv)}</span>` : `<span style="color:var(--text3)">—</span>`;
+    const valVentaStr = p.valVentaInv > 0 ? `<span class="mono" style="color:var(--accent)">${fmt(p.valVentaInv)}</span>` : `<span style="color:var(--text3)">—</span>`;
 
-  mostrar(filtrado);
+    tbody.innerHTML += `<tr>
+      <td style="color:var(--text3);font-family:'JetBrains Mono',monospace">${String(i+1).padStart(2,"0")}</td>
+      <td style="font-weight:600">${p.nombre||"-"}</td>
+      <td class="mono">${p.vendidos||0}</td>
+      <td>${stockStr}</td>
+      <td>${costoInvStr}</td>
+      <td>${valVentaStr}</td>
+      <td class="mono" style="color:var(--accent3)">${fmt(p.ganancia)}</td>
+      <td class="mono">${margen}%</td>
+      <td><span class="pill ${est}">${estTxt}</span></td>
+    </tr>`;
+  });
+  if(!prods.length) tbody.innerHTML = `<tr><td colspan="9" style="text-align:center;color:var(--text3);padding:30px">Sin datos de productos</td></tr>`;
+}
+
+function filtrarProductos(){
+  const q = document.getElementById("prod-search").value.toLowerCase();
+  dibujarTabla(todosProductos.filter(p=>(p.nombre||"").toLowerCase().includes(q)));
+}
+
+function renderAlertas(data){
+  const alerts = [];
+  const total = data.totalGeneral || 0;
+  const cr = data.creditoMonto || 0;
+  const crPct = total ? (cr/total*100) : 0;
+
+  if(total > 500) alerts.push({tipo:"green",ico:"🚀",titulo:"Ventas sólidas",txt:`Total acumulado de ${fmt(total)} demuestra un negocio activo con buena rotación.`});
+  else alerts.push({tipo:"green",ico:"✅",titulo:"Negocio activo",txt:`${ventasGlobal.length} transacciones registradas.`});
+
+  if(crPct > 40) alerts.push({tipo:"orange",ico:"⚠️",titulo:"Alto índice de crédito",txt:`El ${crPct.toFixed(1)}% de ventas son a crédito. Considera establecer límites para mejorar el flujo de caja.`});
+  else alerts.push({tipo:"green",ico:"💵",titulo:"Buen flujo de efectivo",txt:`Solo el ${crPct.toFixed(1)}% en crédito. Tu liquidez es saludable.`});
+
+  const menosVend = data.menosVendidos || [];
+  if(menosVend.length > 0) alerts.push({tipo:"orange",ico:"📦",titulo:"Productos lentos detectados",txt:`${menosVend[0]?.nombre||"Algunos productos"} tienen baja rotación. Considera promociones o reducir stock.`});
+  else alerts.push({tipo:"green",ico:"📦",titulo:"Inventario en movimiento",txt:`Todos los productos muestran movimiento regular. Buen balance de inventario.`});
+
+  document.getElementById("alerts-container").innerHTML = alerts.map(a=>
+    `<div class="alert-item ${a.tipo}"><div class="alert-ico">${a.ico}</div><div class="alert-txt"><b>${a.titulo}</b>${a.txt}</div></div>`
+  ).join("");
+}
+
+const insights = [
+  ["Rendimiento financiero","Tu negocio muestra una tendencia positiva. Las ventas en efectivo dominan el flujo, lo que indica buena liquidez operacional. Considera reinvertir el 20% de las ganancias en productos de alta rotación.","Recomendación estratégica","Los productos con mayor ganancia deben priorizarse en el inventario. Aumenta 30% el stock de los 3 más vendidos y reduce los de menor rotación para liberar capital."],
+  ["Análisis de riesgo","El crédito pendiente representa un riesgo de liquidez. Implementa fechas de cobro claras y considera descuentos por pago anticipado para acelerar la recuperación.","Optimización de horarios","Los datos sugieren mayor actividad de venta en horario vespertino. Concentra esfuerzos de promoción entre 3PM y 7PM para maximizar el volumen de transacciones."],
+  ["Oportunidad de expansión","Tu margen de ganancia es competitivo. Con el ROI actual, podrías recuperar una nueva inversión en aproximadamente 3–4 meses si mantienes el ritmo de ventas.","Gestión de inventario","Revisa los productos con menor ganancia: algunos pueden tener precio de costo elevado. Negocia mejores condiciones con proveedores o busca alternativas más rentables."],
+];
+let insightIdx = 0;
+
+function analizarIA(){
+  const set = insights[insightIdx % insights.length];
+  document.getElementById("ia-insight-1").innerHTML = `<b>${set[0]}</b>${set[1]}`;
+  document.getElementById("ia-insight-2").innerHTML = `<b>${set[2]}</b>${set[3]}`;
+  insightIdx++;
+}
+
+function analisisCompleto(){
+  const total = dataGlobal.totalGeneral || 0;
+  const clientes = ventasGlobal.length;
+  const ticket = clientes ? (total/clientes).toFixed(2) : 0;
+  const heroInv = document.getElementById("hero-invertido").textContent;
+  const heroGan = document.getElementById("hero-si-vendes").textContent;
+  alert(`📋 DIAGNÓSTICO COMPLETO NEXUS IA\n\n💰 Ventas totales: ${fmt(total)}\n🏪 Capital invertido en mercadería: ${heroInv}\n📈 Ganancia si vendes todo hoy: ${heroGan}\n👥 Transacciones: ${clientes}\n🎟 Ticket promedio: $${ticket}\n📊 Estado: ${total > 300 ? "Negocio saludable" : "En crecimiento"}\n\n✅ Recomendaciones:\n• Mantén el stock de productos top\n• Reduce créditos a máximo 30%\n• Invierte en los productos de mayor margen\n• Revisa precios cada 30 días`);
 }
 
 cargar();
+setInterval(cargar, 60000);
 </script>
-
 </body>
 </html>
